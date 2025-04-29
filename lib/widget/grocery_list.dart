@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:shopping_list_app/data/dummy_meal.dart';
+import 'package:shopping_list_app/models/grocery_item.dart';
 import 'package:shopping_list_app/widget/new_item.dart';
 
 class GroceryListScreen extends StatefulWidget {
@@ -11,8 +12,12 @@ class GroceryListScreen extends StatefulWidget {
 }
 
 class _GroceryListScreenState extends State<GroceryListScreen> {
-  void newItem() {
-    showModalBottomSheet(context: context, builder: (ctx) => NewItem());
+  final List<GroceryItem> _groceryItems = [];
+
+  void _addNewItem() {
+    Navigator.of(
+      context,
+    ).push<GroceryItem>(MaterialPageRoute(builder: (ctx) => const NewItem()));
   }
 
   @override
@@ -20,7 +25,7 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Shoping list'),
-        actions: [IconButton(onPressed: newItem, icon: Icon(Icons.add))],
+        actions: [IconButton(onPressed: _addNewItem, icon: Icon(Icons.add))],
       ),
       body: ListView.builder(
         itemCount: groceryItems.length,
