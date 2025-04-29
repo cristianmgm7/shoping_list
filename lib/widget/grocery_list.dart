@@ -14,10 +14,17 @@ class GroceryListScreen extends StatefulWidget {
 class _GroceryListScreenState extends State<GroceryListScreen> {
   final List<GroceryItem> _groceryItems = [];
 
-  void _addNewItem() {
-    Navigator.of(
+  void _addNewItem() async {
+    final newItem = await Navigator.of(
       context,
     ).push<GroceryItem>(MaterialPageRoute(builder: (ctx) => const NewItem()));
+
+    if (newItem == null) {
+      return;
+    }
+    setState(() {
+      _groceryItems.add(newItem);
+    });
   }
 
   @override
@@ -28,17 +35,17 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
         actions: [IconButton(onPressed: _addNewItem, icon: Icon(Icons.add))],
       ),
       body: ListView.builder(
-        itemCount: groceryItems.length,
+        itemCount: _groceryItems.length,
         itemBuilder: (ctx, index) {
           return ListTile(
-            title: Text(groceryItems[index].name),
-            subtitle: Text(groceryItems[index].quantity.toString()),
+            title: Text(_groceryItems[index].name),
+            subtitle: Text(_groceryItems[index].quantity.toString()),
             leading: Container(
               width: 24,
               height: 24,
-              color: groceryItems[index].category.color,
+              color: _groceryItems[index].category.color,
             ),
-            trailing: Text(groceryItems[index].quantity.toString()),
+            trailing: Text(_groceryItems[index].quantity.toString()),
           );
         },
       ),
