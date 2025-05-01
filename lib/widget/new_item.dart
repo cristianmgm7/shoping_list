@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shopping_list_app/data/categories.dart';
 import 'package:shopping_list_app/models/category.dart';
 import 'package:shopping_list_app/models/grocery_item.dart';
+
 import 'package:http/http.dart' as http;
 
 class NewItem extends StatefulWidget {
@@ -20,16 +21,20 @@ class _NewItemState extends State<NewItem> {
   var _enteredName = '';
   var _enteredQuantity = 1;
   var _selectedCategory = categories[Categories.vegetables]!;
+  var _isSending = false;
 
-  void saveItem() {
+  void saveItem() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      setState(() {
+        _isSending = true;
+      });
       // Send the data to the server
       final url = Uri.https(
         'flutter-crisp-default-rtdb.europe-west1.firebasedatabase.app',
         'shoping-list.json',
       );
-      http.post(
+      final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
@@ -38,9 +43,16 @@ class _NewItemState extends State<NewItem> {
           'category': _selectedCategory.title,
         }),
       );
+
+      final Map<String, dynamic> resData = json.decode(response.body);
+
+      if (!context.mounted) {
+        return;
+      }
+      // If the response is successful, pop the screen and return the new item to dont load the entire data again in the main screen
       Navigator.of(context).pop(
         GroceryItem(
-          id: DateTime.now().toIso8601String(),
+          id: resData['name'],
           name: _enteredName,
           quantity: _enteredQuantity,
           category: _selectedCategory,
@@ -153,14 +165,24 @@ class _NewItemState extends State<NewItem> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                    onPressed: saveItem,
-                    child: const Text('Save'),
+                    onPressed: _isSending ? null : saveItem,
+                    child:
+                        _isSending
+                            ? const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(),
+                            )
+                            : const Text('Save'),
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
-                    onPressed: () {
-                      _formKey.currentState!.reset();
-                    },
+                    onPressed:
+                        _isSending
+                            ? null
+                            : () {
+                              _formKey.currentState!.reset();
+                            },
                     child: const Text('reset'),
                   ),
                 ],
